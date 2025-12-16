@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bunyk/gokeybr/cmd"
+	"github.com/junkblocker/gokeybr/cmd"
 )
 
 func main() {

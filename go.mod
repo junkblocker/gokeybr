@@ -1,4 +1,4 @@
-module github.com/bunyk/gokeybr
+module github.com/junkblocker/gokeybr
 
 go 1.13
 

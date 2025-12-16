@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/bunyk/gokeybr/stats"
+	"github.com/junkblocker/gokeybr/stats"
 	"github.com/spf13/cobra"
 )
 

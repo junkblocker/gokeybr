@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bunyk/gokeybr/app"
-	"github.com/bunyk/gokeybr/stats"
+	"github.com/junkblocker/gokeybr/app"
+	"github.com/junkblocker/gokeybr/stats"
 )
 
 var zen bool

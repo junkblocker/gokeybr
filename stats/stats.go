@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bunyk/gokeybr/fs"
+	"github.com/junkblocker/gokeybr/fs"
 )
 
 // TODO: maybe use integer values in miliseconds, to save space?

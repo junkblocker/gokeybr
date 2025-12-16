@@ -13,7 +13,7 @@ The more often some sequence of keys appears in the text, the greater will be th
 
 ## Installation
 ```bash
-go get github.com/bunyk/gokeybr
+go get github.com/junkblocker/gokeybr
 ```
 
 ## Usage

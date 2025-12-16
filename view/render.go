@@ -5,8 +5,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/bunyk/gokeybr/stats"
 	"github.com/gdamore/tcell/v2"
+	"github.com/junkblocker/gokeybr/stats"
 )
 
 var doneStyle tcell.Style = tcell.StyleDefault.

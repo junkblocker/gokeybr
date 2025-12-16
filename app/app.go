@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bunyk/gokeybr/fs"
-	"github.com/bunyk/gokeybr/view"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/encoding"
+	"github.com/junkblocker/gokeybr/fs"
+	"github.com/junkblocker/gokeybr/view"
 )
 
 // used for testing

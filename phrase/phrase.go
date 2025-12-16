@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/bunyk/gokeybr/fs"
+	"github.com/junkblocker/gokeybr/fs"
 )
 
 func FromFile(filename string, offset, minLength int) (string, int, error) {
