@@ -324,7 +324,7 @@ func loadStats() (*stats, error) {
 	err := fs.LoadJSON(StatsFile, statsCache)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Printf("Warning: File %s does not exist! It will be created.\n", StatsFile)
+			// fmt.Printf("Warning: File %s does not exist! It will be created.\n", StatsFile)
 			return statsCache, nil
 		}
 		return nil, err
