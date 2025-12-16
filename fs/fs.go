@@ -9,15 +9,19 @@ import (
 	"path/filepath"
 )
 
-const FileAccess = 0644
+const FileAccess = 0o644
 
 func homeFilePath(name string) string {
-	return filepath.Join(
-		os.Getenv("HOME"),
-		".gokeybr",
-		name,
-	)
+	dir := os.Getenv("XDG_STATE_HOME")
+	if dir == "" {
+		dir = filepath.Join(
+			os.Getenv("HOME"),
+			".local",
+			"state")
+	}
+	return filepath.Join(dir, "gokeybr", name)
 }
+
 func mkdir() {
 	dir := homeFilePath("/")
 	if _, err := os.Stat(dir); err != nil {
