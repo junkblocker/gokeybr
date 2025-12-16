@@ -9,10 +9,10 @@ import (
 	"github.com/junkblocker/gokeybr/stats"
 )
 
-var doneStyle tcell.Style = tcell.StyleDefault.
+var doneStyle = tcell.StyleDefault.
 	Foreground(tcell.ColorGreen)
 
-var lifeStyle tcell.Style = tcell.StyleDefault.
+var lifeStyle = tcell.StyleDefault.
 	Foreground(tcell.ColorPurple)
 
 var redBar = tcell.StyleDefault.

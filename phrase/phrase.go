@@ -5,12 +5,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/junkblocker/gokeybr/fs"
@@ -30,7 +28,6 @@ func Words(filename string, n int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	rand.Seed(time.Now().UTC().UnixNano())
 	var phrase []string
 	for i := 0; i < n; i++ {
 		w := words[rand.Intn(len(words))]
@@ -39,21 +36,20 @@ func Words(filename string, n int) (string, error) {
 	return strings.Join(phrase, " "), nil
 }
 
-func readFileLines(filename string, offset int) (lines []string, skipped int, err error) {
-	var data []byte
-	if filename == "-" {
-		data, err = ioutil.ReadAll(os.Stdin)
-	} else {
-		data, err = ioutil.ReadFile(filename)
-		if offset < 0 {
-			offset = lastFileOffset(filename)
-			fmt.Printf("Offset was not given, loaded last saved progress on line %d\n", offset)
-		}
-	}
+func InbuiltWords(inbuiltWords []byte, n int) (string, error) {
+	words, _, err := readData(inbuiltWords, 0)
 	if err != nil {
-		return
+		return "", err
 	}
+	var phrase []string
+	for i := 0; i < n; i++ {
+		w := words[rand.Intn(len(words))]
+		phrase = append(phrase, w)
+	}
+	return strings.Join(phrase, " "), nil
+}
 
+func readData(data []byte, offset int) (lines []string, skipped int, err error) {
 	skip := offset
 	reader := bufio.NewReader(bytes.NewBuffer(data))
 	for {
@@ -61,12 +57,12 @@ func readFileLines(filename string, offset int) (lines []string, skipped int, er
 		if rerr != nil {
 			if rerr == io.EOF {
 				if len(lines) == 0 {
-					err = fmt.Errorf("datafile %s contains no usable data at offset %d", filename, offset)
+					err = fmt.Errorf("no usable data at offset %d", offset)
 				}
-				return
+				return lines, skipped, err
 			}
 			err = rerr
-			return
+			return lines, skipped, err
 		}
 		if skip > 0 {
 			skip--
@@ -75,7 +71,24 @@ func readFileLines(filename string, offset int) (lines []string, skipped int, er
 			lines = append(lines, line[:len(line)-1])
 		}
 	}
+}
 
+func readFileLines(filename string, offset int) (lines []string, skipped int, err error) {
+	var data []byte
+	if filename == "-" {
+		data, err = io.ReadAll(os.Stdin)
+	} else {
+		data, err = os.ReadFile(filename)
+		if offset < 0 {
+			offset = lastFileOffset(filename)
+			fmt.Printf("Offset was not given, loaded last saved progress on line %d\n", offset)
+		}
+	}
+	if err != nil {
+		return lines, skipped, err
+	}
+
+	return readData(data, offset)
 }
 
 func slice(lines []string, minLength int) []string {

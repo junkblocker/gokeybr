@@ -10,16 +10,18 @@ import (
 	"github.com/junkblocker/gokeybr/stats"
 )
 
-var zen bool
-var mute bool
-var minSpeed int
-var rootCmd = &cobra.Command{
-	Use:  "gokeybr",
-	Long: Help,
-	Run: func(cmd *cobra.Command, args []string) {
-		_ = cmd.Help()
-	},
-}
+var (
+	zen      bool
+	mute     bool
+	minSpeed int
+	rootCmd  = &cobra.Command{
+		Use:  "gokeybr",
+		Long: Help,
+		Run: func(cmd *cobra.Command, args []string) {
+			_ = cmd.Help()
+		},
+	}
+)
 
 func saveStats(a *app.App, isTraining bool) {
 	fmt.Println(a.Summary())

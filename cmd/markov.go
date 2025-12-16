@@ -36,7 +36,7 @@ var markovCmd = &cobra.Command{
 
 func init() {
 	markovCmd.Flags().IntVarP(&markovLength, "length", "l", 100,
-		"Minimal lenght in characters of generated text (default 100)",
+		"Minimal length in characters of generated text (default 100)",
 	)
 	rootCmd.AddCommand(markovCmd)
 }

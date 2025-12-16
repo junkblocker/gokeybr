@@ -12,18 +12,20 @@ import (
 	"github.com/junkblocker/gokeybr/fs"
 )
 
-// TODO: maybe use integer values in miliseconds, to save space?
+// TODO: maybe use integer values in milliseconds, to save space?
 // Even microseconds will save 4 chars per datapoint
 
 const MinSessionLength = 5
 
-const LogStatsFile = "sessions_log.jsonl"
-const StatsFile = "stats.json"
+const (
+	LogStatsFile = "sessions_log.jsonl"
+	DBFile       = "stats.json"
+)
 
 func SaveSession(start time.Time, text []rune, timeline []float64, training bool) error {
 	if len(text) != len(timeline) {
 		return fmt.Errorf(
-			"Length of text (%d) does not match leght of timeline (%d)! Stats not saved.",
+			"length of text (%d) does not match length of timeline (%d)! Stats not saved",
 			len(text), len(timeline),
 		)
 	}
@@ -64,15 +66,12 @@ func getTrigrams() ([]TrigramScore, error) {
 
 	trigrams := stats.trigramsToTrain()
 	if len(trigrams) < NWeakest {
-		return nil, fmt.Errorf("Not enought stats yet to generate good exercise")
+		return nil, fmt.Errorf("not enough stats yet to generate good exercise")
 	}
 	return trigrams, err
 }
 
 func WeakestTraining(length int) (string, error) {
-	if length == 0 {
-		length = 100
-	}
 	trigrams, err := getTrigrams()
 	if err != nil {
 		return "", err
@@ -99,11 +98,11 @@ func effortResult(trigramTime float64) float64 {
 func weakestSequence(trigrams []TrigramScore, length int) string {
 	// First, we start from the weakest trigram, say abc
 	// Easiest - we would just repeat it, like abcabcabc..., but
-	// maybe bca is already trained good enough. So we threat each
+	// maybe bca is already trained good enough. So we treat each
 	// trigram abc as graph edge ab -> bc, with the weight = 1 / score of trigram
-	// And then we try to find shortest path from bc to ab.
+	// And then we try to find the shortest path from bc to ab.
 	// After that just repeat that path until we get sequence of required length
-	//start := trigrams[0].Trigram
+	// start := trigrams[0].Trigram
 	finish, start := headTail(trigrams[0].Trigram)
 
 	// Build graph
@@ -161,7 +160,7 @@ func wrap(loop []rune, l int) string {
 	return string(buffer)
 }
 
-// split abc to ab & bc (with unicode support)
+// split abc to ab & bc (with Unicode support)
 func headTail(trigram string) (string, string) {
 	r := []rune(trigram)
 	return string(r[:2]), string(r[1:])
@@ -173,7 +172,7 @@ type edge struct {
 }
 
 // bellmanFord algorithm receives graph as list of vertices and edges
-// it returns map that says from which vertice goes shortest path to current
+// it returns map that says from which vertice goes the shortest path to current
 func bellmanFord(start string, vertices map[string]bool, edges []edge) map[string]string {
 	distance := make(map[string]float64)
 	predecessor := make(map[string]string)
@@ -199,7 +198,7 @@ func updateStats(text []rune, timeline []float64, training bool) error {
 		return err
 	}
 	stats.addSession(text, timeline, training)
-	return fs.SaveJSON(StatsFile, stats)
+	return fs.SaveJSON(DBFile, stats)
 }
 
 type stats struct {
@@ -209,7 +208,7 @@ type stats struct {
 	Trigrams              map[string]trigramStat
 }
 
-func (s stats) AverageCharDuration() float64 {
+func (s *stats) AverageCharDuration() float64 {
 	return s.TotalSessionsDuration / float64(s.TotalCharsTyped)
 }
 
@@ -234,7 +233,7 @@ type TrigramScore struct {
 // return list of trigrams with their relative importance to train
 // the more frequent is trigram and the more long it takes to type it
 // the more important will it be to train it
-func (s stats) trigramsToTrain() []TrigramScore {
+func (s *stats) trigramsToTrain() []TrigramScore {
 	res := make([]TrigramScore, 0, len(s.Trigrams))
 	for t, ts := range s.Trigrams {
 		sc := ts.Score(s.AverageCharDuration() * 3)
@@ -321,7 +320,7 @@ func loadStats() (*stats, error) {
 		return statsCache, nil
 	}
 	statsCache = &stats{Trigrams: make(map[string]trigramStat)}
-	err := fs.LoadJSON(StatsFile, statsCache)
+	err := fs.LoadJSON(DBFile, statsCache)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// fmt.Printf("Warning: File %s does not exist! It will be created.\n", StatsFile)
@@ -358,13 +357,13 @@ func GetReport() (string, error) {
 		return "", err
 	}
 	res := make([]string, 0)
-	print := func(f string, args ...interface{}) {
+	localPrint := func(f string, args ...interface{}) {
 		res = append(res, fmt.Sprintf(f, args...))
 	}
-	print("Total characters typed: %d\n", stats.TotalCharsTyped)
-	print("Total time in training: %s\n", time.Second*time.Duration(stats.TotalSessionsDuration))
-	print("Average typing speed: %.1f wpm\n", AverageWPM())
-	print("Training sessions: %d\n", stats.SessionsCount)
+	localPrint("Total characters typed: %d\n", stats.TotalCharsTyped)
+	localPrint("Total time in training: %s\n", time.Second*time.Duration(stats.TotalSessionsDuration))
+	localPrint("Average typing speed: %.1f wpm\n", AverageWPM())
+	localPrint("Training sessions: %d\n", stats.SessionsCount)
 	var fastestTr, slowestTr string
 	fastestTime := 10.0
 	slowestTime := 0.0
@@ -379,30 +378,30 @@ func GetReport() (string, error) {
 			slowestTr = t
 		}
 	}
-	print("\nTrigram stats:\n")
-	print("Slowest: %#v %4.2fs (%.1f wpm)\n", slowestTr, slowestTime, time2wpm(slowestTime))
-	print("Fastest: %#v %4.2fs (%.1f wpm)\n", fastestTr, fastestTime, time2wpm(fastestTime))
+	localPrint("\nTrigram stats:\n")
+	localPrint("Slowest: %#v %4.2fs (%.1f wpm)\n", slowestTr, slowestTime, time2wpm(slowestTime))
+	localPrint("Fastest: %#v %4.2fs (%.1f wpm)\n", fastestTr, fastestTime, time2wpm(fastestTime))
 
 	trigrams := stats.trigramsToTrain()
 	if len(trigrams) > 0 {
-		print("\nNeed to be trained most:\n")
-		print("Trigram |   Score | Frequency | Typing time\n")
+		localPrint("\nNeed to be trained most:\n")
+		localPrint("Trigram |   Score | Frequency | Typing time\n")
 		for _, t := range trigrams[:20] {
 			d := stats.Trigrams[t.Trigram]
 			tr := fmt.Sprintf("%#v", t.Trigram)
 			dur := d.Duration.Average(0)
-			print(
+			localPrint(
 				"%7s | %7.2f | %9d | %4.2fs (%.1f wpm)\n",
 				tr, t.Score/stats.TotalSessionsDuration*1000.0, d.Count, dur, time2wpm(dur),
 			)
-			// we divide score to total session duration go get score approximated in promille
+			// we divide score to total session duration go get score approximated in per thousand
 			// if trigram will be the only one we type - it will have 1000 score,
 			// if it's current typing speed equals to total, average, or less if it is typed faster.
 			// if it is typed slower - score will be greater than 1000
 		}
 	}
 	if stats.TotalSessionsDuration < 600 { // Less than 10 minutes of training, not much to show
-		print("\nTrain more to get some progress!")
+		localPrint("\nTrain more to get some progress!")
 		return strings.Join(res, ""), nil
 	}
 	progressInterval := time.Minute * 10      // Show progress in 10 minute intervals
@@ -416,10 +415,10 @@ func GetReport() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	print("\nTraining progress:\n")
-	print("   Time | WPM\n")
+	localPrint("\nTraining progress:\n")
+	localPrint("   Time | WPM\n")
 	for i, wpm := range progress {
-		print("%7s | %.1f\n", formatDuration(time.Duration(i)*progressInterval), wpm)
+		localPrint("%7s | %.1f\n", formatDuration(time.Duration(i)*progressInterval), wpm)
 	}
 	return strings.Join(res, ""), nil
 }

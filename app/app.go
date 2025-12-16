@@ -6,7 +6,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/encoding"
-	"github.com/junkblocker/gokeybr/fs"
 	"github.com/junkblocker/gokeybr/view"
 )
 
@@ -56,8 +55,7 @@ func New(text string) (*App, error) {
 }
 
 // tick will implement tcell.Event, and be used for updating timers on screen
-type tick struct {
-}
+type tick struct{}
 
 func (t tick) When() time.Time {
 	return time.Time{} // no need to know real time yet
@@ -102,14 +100,12 @@ func (a *App) Run() error {
 	}
 }
 
-func log(v interface{}) {
-	fs.AppendJSONLine("debug.jsonl", v)
-}
-
 // wordsPerChar is used for computing WPM.
 // Word is considered to be in average 5 characters long.
-const wordsPerChar = 0.2
-const WPMWindow = 20
+const (
+	wordsPerChar = 0.2
+	WPMWindow    = 20
+)
 
 func (a *App) CheckWPM() float64 {
 	wpm := 0.0
@@ -133,20 +129,6 @@ func (a *App) CheckWPM() float64 {
 	return wpm
 }
 
-func max(a, b int) int {
-	if a < b {
-		return b
-	}
-	return a
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (a *App) ToDisplay() view.DisplayableData {
 	wpm := a.CheckWPM()
 	life := 0.0
@@ -165,7 +147,7 @@ func (a *App) ToDisplay() view.DisplayableData {
 	}
 }
 
-func (a App) Summary() string {
+func (a *App) Summary() string {
 	if a.InputPosition == 0 {
 		return "Typed nothing"
 	}
@@ -179,8 +161,8 @@ func (a App) Summary() string {
 	)
 }
 
-// Compute number of typed lines
-func (a App) LinesTyped() int {
+// LinesTyped computes the number of typed lines
+func (a *App) LinesTyped() int {
 	lt := 0
 	for _, c := range a.Text[:a.InputPosition] {
 		if c == '\n' {
@@ -248,7 +230,7 @@ func (a *App) processCharInput(ev *tcell.EventKey) bool {
 	} else { // wrong
 		a.ErrorInput = append(a.ErrorInput, ch)
 		if !a.Mute {
-			a.scr.Beep()
+			_ = a.scr.Beep()
 		}
 	}
 	return a.InputPosition < len(a.Text)

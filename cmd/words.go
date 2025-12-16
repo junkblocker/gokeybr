@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	_ "embed"
 	"fmt"
 
 	"github.com/junkblocker/gokeybr/app"
 	"github.com/junkblocker/gokeybr/phrase"
 	"github.com/spf13/cobra"
 )
+
+//go:embed words
+var builtinWords []byte
 
 var wordsCount int
 
@@ -19,11 +23,14 @@ var wordsCmd = &cobra.Command{
 			fmt.Println("Need more then one word to start exercise")
 			return
 		}
-		filename := "/usr/share/dict/words"
+		var text string
+		var err error
 		if len(args) > 0 {
-			filename = args[0]
+			filename := args[0]
+			text, err = phrase.Words(filename, wordsCount)
+		} else {
+			text, err = phrase.InbuiltWords(builtinWords, wordsCount)
 		}
-		text, err := phrase.Words(filename, wordsCount)
 		fatal(err)
 		a, err := app.New(text)
 		fatal(err)

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -35,27 +34,27 @@ func SaveJSON(filename string, o interface{}) error {
 		return err
 	}
 	mkdir()
-	return ioutil.WriteFile(homeFilePath(filename), data, FileAccess)
+	return os.WriteFile(homeFilePath(filename), data, FileAccess)
 }
 
 func LoadJSON(filename string, v interface{}) error {
 	mkdir()
-	data, err := ioutil.ReadFile(homeFilePath(filename))
+	data, err := os.ReadFile(homeFilePath(filename))
 	if err != nil {
 		return err
 	}
 	return json.Unmarshal(data, v)
 }
 
-func AppendJSONLine(filename string, v interface{}) error {
+func AppendJSONLine(filename string, v interface{}) (err error) {
 	mkdir()
-	f, err := os.OpenFile(homeFilePath(filename), os.O_APPEND|os.O_CREATE|os.O_WRONLY, FileAccess)
-	if err != nil {
+	var f *os.File
+	if f, err = os.OpenFile(homeFilePath(filename), os.O_APPEND|os.O_CREATE|os.O_WRONLY, FileAccess); err != nil {
 		return err
 	}
 	defer f.Close()
-	data, err := json.Marshal(v)
-	if err != nil {
+	var data []byte
+	if data, err = json.Marshal(v); err != nil {
 		return err
 	}
 	_, err = fmt.Fprintln(f, string(data))
@@ -79,7 +78,7 @@ func NewJSONLinesIterator(filename string) (*JSONLinesIterator, error) {
 }
 
 func (i JSONLinesIterator) Close() {
-	i.file.Close()
+	_ = i.file.Close()
 }
 
 func (i JSONLinesIterator) UnmarshalNextLine(v interface{}) (bool, error) {

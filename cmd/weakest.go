@@ -35,7 +35,7 @@ var weakestCmd = &cobra.Command{
 
 func init() {
 	weakestCmd.Flags().IntVarP(&weakestLength, "length", "l", 50,
-		"Minimal lenght in characters of generated text (default 50)",
+		"Minimal length in characters of generated text (default 50)",
 	)
 	rootCmd.AddCommand(weakestCmd)
 }

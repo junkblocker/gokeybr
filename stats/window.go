@@ -11,8 +11,6 @@ type Window struct {
 	Values [Capacity]int `json:"v"`
 }
 
-const MillisecondsInSecond = 1000.0
-
 func (w *Window) Append(val float64) {
 	w.Values[w.Index] = int(math.Round(val * 1000.0))
 	w.Index = (w.Index + 1) % Capacity
@@ -21,7 +19,7 @@ func (w *Window) Append(val float64) {
 	}
 }
 
-func (w Window) Average(def float64) float64 {
+func (w *Window) Average(def float64) float64 {
 	sum := 0.0
 	if w.Length == 0 {
 		return def
